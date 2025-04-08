@@ -1,0 +1,15 @@
+##Download hg38 genome from Ensembl in a folder of your choice
+wget https://ftp.ensembl.org/pub/release-113/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+
+##For Hi-C, the genome is downloaded and indexed using bwa-mem instead of bowtie2. Prepare the indexing as the following
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=1:mem=900gb
+
+module load anaconda3/personal
+source activate bwa_env
+
+cd $PBS_O_WORKDIR
+
+bwa index Homo_sapiens.GRCh38.dna.primary_assembly.fa
+
+cp * $PBS_O_WORKDIR
