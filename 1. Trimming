@@ -1,1 +1,13 @@
+##After trimming, perform FastQC to determine if the adaptors have been properly removed
 
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=1:mem=900gb
+
+module load fastqc
+
+for file in $PBS_O_WORKDIR/*.fastq
+do
+fastqc $file -d $TMPDIR -o .
+done
+
+cp * $PBS_O_WORKDIR
