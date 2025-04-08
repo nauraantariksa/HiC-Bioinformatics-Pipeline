@@ -1,0 +1,21 @@
+## Hi-C files are typically very large, and thus it is common to split them into multiple files to allow multiplexing for alignment. The following code splits the fasta files into 4000000 reads/file
+
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=1:mem=900gb
+
+module load anaconda3/personal
+source activate seqkit_env
+
+cd $PBS_O_WORKDIR
+
+for fq1 in *_1_trimmed.fastq
+do
+fq2=${fq1/_1_trimmed.fastq/_2_trimmed.fastq}
+base=${fq1%_1_trimmed.fastq}
+out_dir="out.${base#*_}"
+
+mkdir -p $out_dir
+seqkit split2 -1 $fq1 -2 $fq2 -s 4000000 -O $out_dir -f -e .gz
+done
+
+cp * $PBS_O_WORKDIR
