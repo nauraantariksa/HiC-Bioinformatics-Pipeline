@@ -1,0 +1,21 @@
+##After the alignment, files can be merged to allow easier downstream analysis
+
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=250:mem=900gb
+
+module load samtools
+
+cd $PBS_O_WORKDIR
+
+for file in $PBS_O_WORKDIR/*_1_trimmed.part_001_aligned.bam
+do
+base=${file%_1_trimmed.part_001_aligned.bam}
+header=${base}_1_trimmed.part_001_aligned.bam
+
+echo "Merging files: ${base}_1_trimmed.part_*.bam"
+
+samtools merge ${base}.bam -h $header ${base}_1_trimmed.part_*.bam
+
+ls -lh ${base}.bam
+
+done
