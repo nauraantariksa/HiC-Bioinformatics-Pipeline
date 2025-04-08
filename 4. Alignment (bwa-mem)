@@ -1,0 +1,19 @@
+## Split fasta files are alignment to hg38 or hg19 using the bwa-mem tool. Below is the method to align "paired-end" files. Adjust as needed when performing "single-end" files
+
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=250:mem=900gb
+
+module load anaconda3/personal
+source activate bwa_env
+
+cd $PBS_O_WORKDIR
+
+REF='/rds/general/project/diantonio/live/Naura/Trial/hESC_BG4HiC/hg38_bwa/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+
+for fq1 in *_1_trimmed.part*.fastq.gz
+do
+fq2=${fq1/_1_trimmed/_2_trimmed}
+base=${fq1%.fastq.gz}
+
+bwa mem -SP5M -t 18 $REF $fq1 $fq2 > ${base}_aligned.bam
+done
