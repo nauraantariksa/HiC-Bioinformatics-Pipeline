@@ -1,0 +1,21 @@
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=250:mem=900gb
+
+module load anaconda3/personal
+source activate hic_env
+
+cd $PBS_O_WORKDIR
+
+bam_file="SRR27211890.bam"
+mapq=5
+out="${bam_file%.bam}"
+
+samtools view -h $bam_file | pairtools parse -c /rds/general/project/diantonio/live/Naura/Trial/hESC_BG4HiC/hg38_bwa/hg38.chr.genome --min-mapq $mapq --assembly hg38 -o ${out}.parsed.pairsam
+pairtools sort -o ${out}.sorted.pairsam ${out}.parsed.pairsam
+pairtools dedup --mark-dups -o ${out}.deduped.pairsam ${out}.sorted.pairsam --output-stats ${out}.stats
+
+pairtools select '(pair_type == "UU" or pair_type == "UR" or pair_type == "RU")' --output ${out}.filtered.pairsam ${out}.deduped.pairsam
+pairtools split --output-pairs ${out}.nodups.pairs.gz ${out}.filtered.pairsam
+
+zcat ${out}.nodups.pairs.gz | grep -v '#'  | perl -F'\t' -lane 'print join "\t", @F[0,1,2,5,3,4,6]' > ${out}.Valid.pairs
+gzip ${out}.Valid.pairs 
