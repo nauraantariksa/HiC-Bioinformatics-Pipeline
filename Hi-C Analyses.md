@@ -124,6 +124,7 @@ cp * $PBS_O_WORKDIR
 To align multiple files in a parallel manner, a <b>submission loop</b> was created on top of the usual PBS job. The submission loop can be started using the bash command on Terminal. Alignment submission loop can be submitted while splitting is still running, given the conditional command that the alignment could only start after all the splitting job has been completed. Upon alignment, the files were re-merged per biological replicate.
 
 ### Alignment Submission Loop
+```bash
 SPLIT_JOBID=xxxx.pbs-7
 
 out_base=/PATH/TO/ALIGNED-FILES
@@ -132,6 +133,7 @@ for sample in C1_T1 C1_T2 C2_T1 C2_T2 W1_T1 W1_T2 W2_T1 W2_T2 W3_T1 W3_T2; do
   mkdir -p $out_base/$sample
   qsub -W depend=afterok:$SPLIT_JOBID -v SAMPLE=$sample Alignment_HiC.pbs
 done
+```
 
 ### Alignment
 ```bash
