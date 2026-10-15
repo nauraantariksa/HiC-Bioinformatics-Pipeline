@@ -1,0 +1,5 @@
+Files	Condition
+/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/C1_10kb_All2All/FitHiChIP_ALL2ALL_b10000_L20000_U2000000/Coverage_Bias/FitHiC_BiasCorr/FitHiChIP.interactions_FitHiC.bed	CSB
+/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/C2_10kb_All2All/FitHiChIP_ALL2ALL_b10000_L20000_U2000000/Coverage_Bias/FitHiC_BiasCorr/FitHiChIP.interactions_FitHiC.bed	CSB
+/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/W2_10kb_All2All/FitHiChIP_ALL2ALL_b10000_L20000_U2000000/Coverage_Bias/FitHiC_BiasCorr/FitHiChIP.interactions_FitHiC.bed	WT
+/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/W3_10kb_All2All/FitHiChIP_ALL2ALL_b10000_L20000_U2000000/Coverage_Bias/FitHiC_BiasCorr/FitHiChIP.interactions_FitHiC.bed	WT
