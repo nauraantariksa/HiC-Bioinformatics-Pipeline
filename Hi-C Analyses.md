@@ -6,6 +6,13 @@
   - [Genome download and indexing](#genome-download-and-indexing)
   - [Alignment and re-merging of Hi-C data](#alignment-and-re-merging-of-hi-c-data)
   - [Parsing](#parsing)
+  - [Generating contact maps](generating-contact-maps)
+- [Downstream analyses](#downstream-analyses)
+  - [Recommended tools/software](#recommended-toolssoftware)
+  - [Compartment calling](#compartment-calling)
+  - [Loop calling](#loop-calling)
+    - [Differential loop calling](#differential-loop-calling)
+  - [Intersection with ChIP datasets](#intersection-with-chip-datasets)
  
 # Data analyses
 This GitHub page is a collection of scripts and general code used for the analysis of Hi-C datasets. Differential analyses were given with a comparison between CS1AN CSB+ and CSB- cell lines as an example.
@@ -21,8 +28,10 @@ Make sure these dependencies are installed in your system:
 - seqkit v2.8.2
 - BWA-MEM 0.7.18
 - SAMtools v1.22.1
-- Picard v2.25.1
 - BEDTools v2.31.1
+- Pairtools v1.1.0
+- Java v21.0.8
+- Juicer_tools v1.22.01
 
 In anaconda3, make separate environments for the following Python suites used for the data analyses:
 - deepTools v3.5.6
@@ -195,8 +204,8 @@ done
 eval "$(/rds/general/user/nfa23/home/anaconda3/bin/conda shell.bash hook)"
 conda activate hic_env
 
-biorep_dir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/Merging/$BIOREP
-final_out_dir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/ParsingMAPQ30/$BIOREP
+biorep_dir=/PATH/TO/MERGED-FILES/$BIOREP
+final_out_dir=/PATH/TO/PARSED-FILES/$BIOREP
 tmp_dir=$EPHEMERAL/tmp_parsing/$BIOREP
 mkdir -p $tmp_dir $final_out_dir
 
@@ -223,3 +232,135 @@ gzip ${out}.MAPQ30.Valid.pairs
 
 cp ${out}.MAPQ30.nodups.pairs.gz ${out}.MAPQ30.Valid.pairs.gz ${out}.MAPQ30.stats $final_out_dir/
 ```
+
+## Generating contact maps
+Contact maps can be generated using either Juicer tools (Aiden Lab) or Cooler tools. This depends on the format compatibility with the downstream analyses. Here, the code for contact map generated using Juicer is shown for resolution from (10000 to 10000000 bp)/
+
+### Juicer-Cooler Submission Loop
+```bash
+
+parsing_dir=/PATH/TO/PARSED-FILES
+condmerge_dir=/PATH/TO/PARSED-FILES-MERGED-PER-CELL-CONDITION
+out_dir=/PATH/TO/CONTACT-MAP
+
+for sample in C1 C2 W1 W2 W3; do
+  qsub -v PAIRS=$parsing_dir/$sample/$sample.nodups.pairs.gz,OUT=$out_dir/$sample/$sample.hic Juicer_HiC.pbs
+  qsub -v PAIRS=$parsing_dir/$sample/$sample.nodups.pairs.gz,OUT=$out_dir/$sample/$sample.mcool Cooler_HiC.pbs
+done
+
+for cond in CSB WT; do
+  qsub -v PAIRS=$condmerge_dir/${cond}_combined.nodups.pairs.gz,OUT=$out_dir/CondMerge/${cond}_combined.hic Juicer_HiC.pbs
+  qsub -v PAIRS=$condmerge_dir/${cond}_combined.nodups.pairs.gz,OUT=$out_dir/CondMerge/${cond}_combined.mcool Cooler_HiC.pbs
+done
+```
+
+### Juicer
+```bash
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=16:mem=64gb
+
+module load Java/21.0.8
+
+chromsizes=/rds/general/project/diantonio/live/tools/genomes/hg38_ucsc_bwa/hg38_ordered.chr.genome
+mkdir -p $(dirname $OUT)
+
+java -Xmx56G -jar /rds/general/user/nfa23/projects/diantonio/live/Naura/ExternalBioinformatics/hESC_BG4HiC/Parsing/juicer_tools_1.22.01.jar pre \
+  -q 5 --threads 16 \
+  -r 10000,20000,25000,50000,100000,250000,500000,1000000,10000000 \
+  $PAIRS $OUT $chromsizes
+```
+
+### Cooler
+```bash
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=16:mem=64gb
+
+eval "$(/rds/general/user/nfa23/home/anaconda3/bin/conda shell.bash hook)" 
+conda activate hic_env
+
+pairs_dir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/Parsing/ParsingMAPQ5/CondMerge/
+chromsizes=/rds/general/project/diantonio/live/tools/genomes/hg38_ucsc_bwa/hg38.chr.genome
+out_dir=/PATH/TO/COOLER-MAPS
+mkdir -p $out_dir
+
+cooler cload pairs -c1 2 -p1 3 -c2 4 -p2 5 \
+  ${chromsizes}:10000 $PAIRS ${BASE}.10000.cool
+
+cooler zoomify --nproc 16 --resolutions 10000,20000,50000,100000,250000,500000,1000000,10000000 \
+  -o $OUT ${BASE}.10000.cool
+```
+
+# Downstream analyses
+After generating the Hi-C contact map, several downstream analyses could be performed; compartment calling (CALDER2), loop calling and differential calling (FitHiChIP, FitHiChIP), intersections with ChIP-seq data (BEDTools), etc.
+
+## Recommended tools/software
+Depending on the type of analysis, different tools could be utilized. Several softwares/tools used to analyze the data of CSB+ vs CSB- cells ware shown below:
+- CALDER2 v0.7
+- DiffComp v0.0.3.post1.dev11+g2878167a9
+  
+## Compartment calling
+Compartment calling could be performed using CALDER2. Differential calling between two cell line conditions could then be performed using DiffComp. This will show the distribution of A/B compartments, which denote active/inactive regions of the chromatin, ranked and clustered per-subcompartment. Differential analysis will allow the analysis of differences between two cell lines. The code below shows an example pipeline for the comparison between CSB+ (CSB) and CSB- (WT) cells.
+
+### CALDER2 compartment calling
+```bash
+#PBS -lwalltime=08:00:00
+#PBS -lselect=1:ncpus=8:mem=64gb
+
+eval "$(/rds/general/user/nfa23/home/anaconda3/bin/conda shell.bash hook)"
+conda activate calder_env
+
+Rscript /rds/general/user/nfa23/projects/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/CALDER_Compartment/Calder_HiC.R
+```
+```R
+library(CALDER)
+
+samples <- list(
+  CSB = "/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/ContactMap/CondMerge/CSB_combined.hic",
+  WT = "/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/ContactMap/CondMerge/WT_combined.hic"
+)
+
+for (s in names(samples)) {
+  CALDER(
+    contact_file_hic = samples[[s]],
+    chrs = c(1:22, "X"),
+    bin_size = 50000,
+    genome = "hg38",
+    save_dir = paste0("/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/CALDER_Compartment/", s),
+    single_binsize_only = TRUE,
+    save_intermediate_data = FALSE,
+    n_cores = 8,
+    sub_domains = FALSE
+  )
+}
+```
+
+### DiffComp
+```bash
+#PBS -lwalltime=04:00:00
+#PBS -lselect=1:ncpus=4:mem=16gb
+
+eval "$(/rds/general/user/nfa23/home/anaconda3/bin/conda shell.bash hook)"
+conda activate diffComp
+
+out_dir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/CALDER_Compartment/diffComp
+mkdir -p $out_dir
+
+calder_dir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/CALDER_Compartment
+calder_ind_dir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/CALDER_Compartment/CALDER_Individual
+
+cores \
+  $calder_dir/CSB/sub_compartments/CSB_all_sub_compartments.bed \
+  $calder_dir/WT/sub_compartments/WT_all_sub_compartments.bed \
+  50000 \
+  $out_dir/CSBvWT_output \
+  --control1_path $calder_ind_dir/C1/sub_compartments/all_sub_compartments.bed,$calder_ind_dir/C2/sub_compartments/all_sub_compartments.bed \
+  --control2_path $calder_ind_dir/W2/sub_compartments/all_sub_compartments.bed,$calder_ind_dir/W3/sub_compartments/all_sub_compartments.bed \
+  --genome hg38 \
+  --bed_path $out_dir/CSBvWT_CoREs.bed \
+  --signal_path $out_dir/CSBvWT_signal \
+  --verbose
+```
+
+## Loop calling
+### Differential loop calling
+## Intersection with ChIP datasets
