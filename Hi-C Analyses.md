@@ -297,9 +297,11 @@ After generating the Hi-C contact map, several downstream analyses could be perf
 Depending on the type of analysis, different tools could be utilized. Several softwares/tools used to analyze the data of CSB+ vs CSB- cells ware shown below:
 - CALDER2 v0.7
 - DiffComp v0.0.3.post1.dev11+g2878167a9
+- FitHiChIP v
+- DiffHiChIP v
   
 ## Compartment calling
-Compartment calling could be performed using CALDER2. Differential calling between two cell line conditions could then be performed using DiffComp. This will show the distribution of A/B compartments, which denote active/inactive regions of the chromatin, ranked and clustered per-subcompartment. Differential analysis will allow the analysis of differences between two cell lines. The code below shows an example pipeline for the comparison between CSB+ (CSB) and CSB- (WT) cells.
+Compartment calling could be performed using CALDER2, whereas ifferential calling between two cell line conditions could then be performed using DiffComp (CSO Group, EPFL). This will show the distribution of A/B compartments, which denote active/inactive regions of the chromatin, ranked and clustered per-subcompartment. Differential analysis will allow the analysis of differences between two cell lines. The code below shows an example pipeline for the comparison between CSB+ (CSB) and CSB- (WT) cells.
 
 ### CALDER2 compartment calling
 ```bash
@@ -334,7 +336,7 @@ for (s in names(samples)) {
 }
 ```
 
-### DiffComp
+### DiffComp for differential analysis
 ```bash
 #PBS -lwalltime=04:00:00
 #PBS -lselect=1:ncpus=4:mem=16gb
@@ -362,5 +364,7 @@ cores \
 ```
 
 ## Loop calling
+Loop callings can be performed with several softwares, and for several modes. Below, peak calling using FitHiChIP is shown.
+
 ### Differential loop calling
 ## Intersection with ChIP datasets
