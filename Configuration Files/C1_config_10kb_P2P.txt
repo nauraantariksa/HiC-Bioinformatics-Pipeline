@@ -1,0 +1,18 @@
+# FitHiChIP Configuration File - 10kb Resolution
+# ================================================
+
+HIC=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/ContactMap/C1/C1.hic
+PeakFile=/rds/general/user/nfa23/projects/diantonio/live/Naura/ChIP/CS1AN_WTvCSB_Novogene_Analyses/CS1AN_CSB_BG4_Bio34_Multiinter_Merged.bed
+HiCProBasedir=/rds/general/user/nfa23/home/InsHiC-Pro_v3.1.0/HiC-Pro_3.1.0
+OutDir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/C1_10kb_P2P/
+ChrSizeFile=/rds/general/project/diantonio/live/tools/genomes/hg38_ucsc_bwa/hg38.chr.genome
+RefGenome=hg38
+BINSIZE=10000
+LowDistThr=20000
+UppDistThr=2000000
+QVALUE=0.01
+BiasType=1
+BiasCorrection=1
+IntType=1
+MergeInt=1
+Draw=1
