@@ -301,7 +301,7 @@ Depending on the type of analysis, different tools could be utilized. Several so
 - DiffHiChIP v
   
 ## Compartment calling
-Compartment calling could be performed using CALDER2, whereas ifferential calling between two cell line conditions could then be performed using DiffComp (CSO Group, EPFL). This will show the distribution of A/B compartments, which denote active/inactive regions of the chromatin, ranked and clustered per-subcompartment. Differential analysis will allow the analysis of differences between two cell lines. The code below shows an example pipeline for the comparison between CSB+ (CSB) and CSB- (WT) cells.
+Compartment calling could be performed using CALDER2, whereas differential calling between two cell line conditions could then be performed using DiffComp (CSO Group, EPFL). This will show the distribution of A/B compartments, which denote active/inactive regions of the chromatin, ranked and clustered per-subcompartment. Differential analysis will allow the analysis of differences between two cell lines. The code below shows an example pipeline for the comparison between CSB+ (CSB) and CSB- (WT) cells.
 
 ### CALDER2 compartment calling
 ```bash
@@ -364,7 +364,12 @@ cores \
 ```
 
 ## Loop calling
-Loop callings can be performed with several softwares, and for several modes. Below, peak calling using FitHiChIP is shown.
+Loop callings can be performed with several softwares (e.g. FitHiChIP, Chromosight), and for several modes (e.g. ALL2ALL, P2P). Below, peak calling using FitHiChIP, and subsequent differential analysis using DiffHiChIP, are shown.
+
+```bash
+```
 
 ### Differential loop calling
+```bash
+```
 ## Intersection with ChIP datasets
