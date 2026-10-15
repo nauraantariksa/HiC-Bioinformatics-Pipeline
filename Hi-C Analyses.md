@@ -366,10 +366,35 @@ cores \
 ## Loop calling
 Loop callings can be performed with several softwares (e.g. FitHiChIP, Chromosight), and for several modes (e.g. ALL2ALL, P2P). Below, peak calling using FitHiChIP, and subsequent differential analysis using DiffHiChIP, are shown.
 
+Configuration files can be found in the Configuration File folder
+
 ```bash
+#PBS -lwalltime=24:00:00
+#PBS -lselect=1:ncpus=8:mem=64gb
+
+cd $PBS_O_WORKDIR
+
+module load SAMtools/1.18-GCC-12.3.0
+module load BEDTools/2.31.0-GCC-12.3.0
+
+eval "$(~/anaconda3/bin/conda shell.bash hook)"
+conda activate FitHiChIP_env
+
+export PATH=/rds/general/user/nfa23/home/anaconda3/envs/HiC-Pro_v3.1.0/bin:$PATH
+export PATH=/rds/general/user/nfa23/home/InsHiC-Pro_v3.1.0/HiC-Pro_3.1.0/bin:$PATH
+export PATH=/rds/general/user/nfa23/home/anaconda3/envs/FitHiChIP_env/bin:$PATH
+
+FITHICHIP=/rds/general/user/nfa23/home/FitHiChIP/FitHiChIP_HiCPro.sh
+
+mkdir -p $OUTDIR
+
+echo "Starting FitHiChIP $CONDITION: $(date)"
+bash $FITHICHIP -C $CONFIG
+echo "Finished FitHiChIP $CONDITION: $(date)"
 ```
 
 ### Differential loop calling
 ```bash
+
 ```
 ## Intersection with ChIP datasets
