@@ -366,7 +366,7 @@ cores \
 ## Loop calling
 Loop callings can be performed with several softwares (e.g. FitHiChIP, Chromosight), and for several modes (e.g. ALL2ALL, P2P). Below, peak calling using FitHiChIP, and subsequent differential analysis using DiffHiChIP, are shown.
 
-Configuration files can be found in the Configuration File folder
+Different configuration files for various modes of loop calling can be found in the Configuration File folder. ALL2ALL refers to all detected loop interactions within the 3D contact map, P2P refers to detected loop interactions with ChIP peaks designated as anchors. While not show, P2ALL mode could also be performed, where the ChIP peaks are designated as a hub for looping interactions that are not necessarily between two peaks.
 
 ```bash
 #PBS -lwalltime=24:00:00
@@ -395,6 +395,22 @@ echo "Finished FitHiChIP $CONDITION: $(date)"
 
 ### Differential loop calling
 ```bash
+#!/bin/bash
+#PBS -lwalltime=24:00:00
+#PBS -lselect=1:ncpus=8:mem=64gb
 
+cd /rds/general/user/nfa23/home/DiffHiChIP/src
+eval "$(~/anaconda3/bin/conda shell.bash hook)"
+conda activate FitHiChIP_env
+
+Rscript /rds/general/user/nfa23/home/DiffHiChIP/src/DiffLoop_Code_FitHiChIP.R \
+  --InpTable=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/DiffHiChIP_config.txt \
+  --OutDir=/rds/general/project/diantonio/live/Naura/HiC/CS1AN_WTvCSB_Novogene/FitHiChIP/DiffHiChIP_CSBvWT_All2All \
+  --ChrSizeFile=/rds/general/project/diantonio/live/tools/genomes/hg38_ucsc_bwa/hg38.chr.genome \
+  --FDRThr=0.01 \
+  --Model=1 \
+  --DistStrat=1 \
+  --DiffFDRThr=0.05 \
+  --LFCThr=1
 ```
 ## Intersection with ChIP datasets
